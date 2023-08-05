@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #343a40;
+        color: #fff;
+    }
+
+    .card {
+        background-color: #444;
+    }
+
+    .card-title {
+        font-size: 24px;
+    }
+
+    .card-text {
+        color: #ccc;
+    }
+
+    .btn-outline-primary {
+        border-color: #007bff;
+        color: #007bff;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .post-card {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin-bottom: 40px;
+    }
+
+    .like-btn {
+        float: right;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="mb-4">Create a New Post</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <textarea class="form-control" id="content" name="content" rows="5" placeholder="Write your post here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Post</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1 class="mb-4">Feed Page</h1>
+                    {% for post in posts %}
+                    <div class="post-card border border-secondary rounded p-3">
+                        <p class="card-text"><small class="text-muted">Author: {{ post.author.username }}</small></p>
+                        <h3 class="card-title">{{ post.title }}</h3>
+                        <p class="card-text text-muted mb-2">{{ post.created_at }}</p>
+                        <p class="card-text">{{ post.content }}</p>
+                        <button class="like-btn btn btn-outline-primary" data-post-id="{{ post.id }}" style="color: {% if request.user|has_liked:post %}red{% else %}blue{% endif %};">Like{% if request.user|has_liked:post %}d{% endif %}</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Function to handle the like button click
+        $(".like-btn").on("click", function () {
+            const postId = $(this).data("post-id");
+            likePost(postId, $(this));
+        });
+
+        // Function to send the AJAX request and handle the like action
+        function likePost(postId, btnElement) {
+            // Get the CSRF token from the page's cookies
+            const csrftoken = getCookie('csrftoken');
+
+            // Include the CSRF token in the request headers
+            $.ajaxSetup({
+                headers: {
+                    "X-CSRFToken": csrftoken
+                }
+            });
+
+            $.ajax({
+                type: "POST",
+                url: `/post/like/${postId}/`,
+                success: function (response) {
+                    // Update the UI (e.g., change button color or text) as needed
+                    if (response) {
+                        // Toggle the like status
+                        const isLiked = "rgb(255, 0, 0)";
+                        if (response === "ok" && btnElement.css("color") === isLiked) {
+                            btnElement.removeClass("liked");
+                            btnElement.css("color", "blue");
+                            btnElement.text("Like");
+                        } else {
+                            btnElement.addClass("liked");
+                            btnElement.css("color", "red");
+                            btnElement.text("Liked");
+                        }
+                    } else {
+                        console.error("An error occurred while liking the post.");
+                    }
+                },
+                error: function (error) {
+                    console.error("An error occurred while liking the post.");
+                }
+            });
+        }
+
+        // Function to get the CSRF token from the cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === name + "=") {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">My Blog</a>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'user-login-page' %}">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'user-signup-page' %}">Register</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="container mt-5">
+    <h2>Welcome to My Blog</h2>
+    <p>Please login or register to access more features.</p>
+    <div class="row">
+        <div class="col-md-6">
+            <a href="{% url 'user-login-page' %}" class="btn btn-primary btn-block">Login</a>
+        </div>
+        <div class="col-md-6">
+            <a href="{% url 'user-signup-page' %}" class="btn btn-success btn-block">Register</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
